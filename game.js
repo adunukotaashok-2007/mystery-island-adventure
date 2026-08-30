@@ -8,139 +8,305 @@ let player = {
     speed: 5
 };
 
-let treasures = [
-    { x: 300, y: 300, found: false },
-    { x: 1300, y: 400, found: false },
-    { x: 700, y: 1000, found: false },
-    { x: 1500, y: 1100, found: false },
-    { x: 400, y: 1300, found: false }
+let keys = {};
+
+let treasureCount = 0;
+
+let questComplete = false;
+
+let messageTimer = 0;
+
+
+// =========================
+// TREASURES
+// =========================
+
+const treasures = [
+    {
+        x: 300,
+        y: 300,
+        found: false
+    },
+    {
+        x: 1300,
+        y: 400,
+        found: false
+    },
+    {
+        x: 700,
+        y: 1000,
+        found: false
+    },
+    {
+        x: 1500,
+        y: 1100,
+        found: false
+    },
+    {
+        x: 400,
+        y: 1300,
+        found: false
+    }
 ];
 
-let keys = {};
+
+// =========================
+// CLUES
+// =========================
+
+const clues = [
+    {
+        x: 600,
+        y: 400,
+        found: false,
+        text: "📜 Clue: The first treasure lies near the old trees."
+    },
+    {
+        x: 1100,
+        y: 800,
+        found: false,
+        text: "📜 Clue: Look toward the eastern shore."
+    },
+    {
+        x: 800,
+        y: 1200,
+        found: false,
+        text: "📜 Clue: Your final journey leads toward the mountains."
+    }
+];
+
+
+// =========================
+// CAVE
+// =========================
+
+const cave = {
+    x: 1350,
+    y: 1250,
+    width: 120,
+    height: 100
+};
+
+
+// =========================
+// CAMERA
+// =========================
 
 let camera = {
     x: 0,
     y: 0
 };
 
-let treasureCount = 0;
 
-
-// -------------------------
+// =========================
 // CANVAS
-// -------------------------
+// =========================
 
 function resizeCanvas() {
+
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 }
 
-window.addEventListener("resize", resizeCanvas);
+window.addEventListener(
+    "resize",
+    resizeCanvas
+);
 
 resizeCanvas();
 
 
-// -------------------------
+// =========================
 // KEYBOARD
-// -------------------------
+// =========================
 
-window.addEventListener("keydown", function(event) {
-    keys[event.key.toLowerCase()] = true;
-});
+window.addEventListener(
+    "keydown",
+    function(event) {
 
-window.addEventListener("keyup", function(event) {
-    keys[event.key.toLowerCase()] = false;
-});
+        keys[event.key.toLowerCase()] = true;
+    }
+);
+
+window.addEventListener(
+    "keyup",
+    function(event) {
+
+        keys[event.key.toLowerCase()] = false;
+    }
+);
 
 
-// -------------------------
-// TOUCH CONTROLS
-// -------------------------
+// =========================
+// TOUCH BUTTONS
+// =========================
 
-function holdButton(id, key) {
+function setupButton(id, key) {
 
-    const button = document.getElementById(id);
+    const button =
+        document.getElementById(id);
 
-    button.addEventListener("pointerdown", function(event) {
-        event.preventDefault();
-        keys[key] = true;
-    });
+    button.addEventListener(
+        "pointerdown",
+        function(event) {
 
-    button.addEventListener("pointerup", function(event) {
-        event.preventDefault();
-        keys[key] = false;
-    });
+            event.preventDefault();
 
-    button.addEventListener("pointercancel", function() {
-        keys[key] = false;
-    });
+            keys[key] = true;
+        }
+    );
 
-    button.addEventListener("pointerleave", function() {
-        keys[key] = false;
-    });
+    button.addEventListener(
+        "pointerup",
+        function(event) {
+
+            event.preventDefault();
+
+            keys[key] = false;
+        }
+    );
+
+    button.addEventListener(
+        "pointercancel",
+        function() {
+
+            keys[key] = false;
+        }
+    );
+
+    button.addEventListener(
+        "pointerleave",
+        function() {
+
+            keys[key] = false;
+        }
+    );
 }
 
-holdButton("up", "w");
-holdButton("down", "s");
-holdButton("left", "a");
-holdButton("right", "d");
+setupButton("up", "w");
+setupButton("down", "s");
+setupButton("left", "a");
+setupButton("right", "d");
 
 
-// -------------------------
+// =========================
 // PLAYER MOVEMENT
-// -------------------------
+// =========================
 
 function updatePlayer() {
 
     let dx = 0;
     let dy = 0;
 
-    if (keys["w"] || keys["arrowup"]) {
-        dy -= 1;
+    if (
+        keys["w"] ||
+        keys["arrowup"]
+    ) {
+        dy--;
     }
 
-    if (keys["s"] || keys["arrowdown"]) {
-        dy += 1;
+    if (
+        keys["s"] ||
+        keys["arrowdown"]
+    ) {
+        dy++;
     }
 
-    if (keys["a"] || keys["arrowleft"]) {
-        dx -= 1;
+    if (
+        keys["a"] ||
+        keys["arrowleft"]
+    ) {
+        dx--;
     }
 
-    if (keys["d"] || keys["arrowright"]) {
-        dx += 1;
+    if (
+        keys["d"] ||
+        keys["arrowright"]
+    ) {
+        dx++;
     }
 
-    // Prevent diagonal movement from being faster
+
     if (dx !== 0 || dy !== 0) {
 
-        const length = Math.sqrt(
-            dx * dx + dy * dy
-        );
+        const length =
+            Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
 
         dx /= length;
         dy /= length;
 
-        player.x += dx * player.speed;
-        player.y += dy * player.speed;
+        player.x +=
+            dx * player.speed;
+
+        player.y +=
+            dy * player.speed;
     }
 
-    // Island boundaries
-    player.x = Math.max(
-        50,
-        Math.min(1550, player.x)
-    );
 
-    player.y = Math.max(
-        50,
-        Math.min(1450, player.y)
-    );
+    // Island boundary
+
+    player.x =
+        Math.max(
+            70,
+            Math.min(
+                1530,
+                player.x
+            )
+        );
+
+    player.y =
+        Math.max(
+            70,
+            Math.min(
+                1430,
+                player.y
+            )
+        );
 }
 
 
-// -------------------------
-// TREASURE CHECK
-// -------------------------
+// =========================
+// CHECK CLUES
+// =========================
+
+function checkClues() {
+
+    for (const clue of clues) {
+
+        if (clue.found) {
+            continue;
+        }
+
+        const dx =
+            player.x - clue.x;
+
+        const dy =
+            player.y - clue.y;
+
+        const distance =
+            Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
+
+        if (distance < 60) {
+
+            clue.found = true;
+
+            showMessage(
+                clue.text
+            );
+        }
+    }
+}
+
+
+// =========================
+// CHECK TREASURES
+// =========================
 
 function checkTreasures() {
 
@@ -151,13 +317,18 @@ function checkTreasures() {
         }
 
         const dx =
-            player.x - treasure.x;
+            player.x -
+            treasure.x;
 
         const dy =
-            player.y - treasure.y;
+            player.y -
+            treasure.y;
 
         const distance =
-            Math.sqrt(dx * dx + dy * dy);
+            Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
 
         if (distance < 60) {
 
@@ -171,26 +342,84 @@ function checkTreasures() {
                 "💎 Treasures: " +
                 treasureCount;
 
-            document.getElementById(
-                "message"
-            ).textContent =
-                "🎉 You found a treasure!";
+            showMessage(
+                "💎 Treasure discovered!"
+            );
         }
     }
 
-    if (treasureCount === treasures.length) {
 
-        document.getElementById(
-            "message"
-        ).textContent =
-            "🏆 Amazing! You found every treasure!";
+    if (
+        treasureCount ===
+        treasures.length
+    ) {
+
+        questComplete = true;
+
+        showMessage(
+            "🏆 Quest Complete! You discovered every treasure!"
+        );
     }
 }
 
 
-// -------------------------
+// =========================
+// CAVE CHECK
+// =========================
+
+function checkCave() {
+
+    const dx =
+        player.x - cave.x;
+
+    const dy =
+        player.y - cave.y;
+
+    const distance =
+        Math.sqrt(
+            dx * dx +
+            dy * dy
+        );
+
+    if (
+        distance < 100 &&
+        !questComplete
+    ) {
+
+        showMessage(
+            "🕯️ A mysterious cave... Maybe return after finding all the treasures."
+        );
+    }
+
+    if (
+        distance < 100 &&
+        questComplete
+    ) {
+
+        showMessage(
+            "✨ The cave is glowing! A new adventure awaits..."
+        );
+    }
+}
+
+
+// =========================
+// MESSAGE
+// =========================
+
+function showMessage(text) {
+
+    document.getElementById(
+        "message"
+    ).textContent = text;
+
+    messageTimer = 180;
+}
+
+
+// =========================
 // CAMERA
-// -------------------------
+// =========================
 
 function updateCamera() {
 
@@ -204,13 +433,14 @@ function updateCamera() {
 }
 
 
-// -------------------------
+// =========================
 // DRAW ISLAND
-// -------------------------
+// =========================
 
 function drawIsland() {
 
     // Ocean
+
     ctx.fillStyle = "#4aa9d8";
 
     ctx.fillRect(
@@ -222,13 +452,14 @@ function drawIsland() {
 
 
     // Island
+
     ctx.fillStyle = "#79c267";
 
     ctx.beginPath();
 
     ctx.roundRect(
-        -camera.x + 30,
-        -camera.y + 30,
+        30 - camera.x,
+        30 - camera.y,
         1540,
         1440,
         100
@@ -237,31 +468,37 @@ function drawIsland() {
     ctx.fill();
 
 
-    // Sand border
+    // Sand
+
     ctx.strokeStyle = "#e7d28c";
+
     ctx.lineWidth = 35;
 
     ctx.stroke();
 }
 
 
-// -------------------------
+// =========================
 // DRAW TREES
-// -------------------------
+// =========================
 
 function drawTrees() {
 
     const trees = [
+
         { x: 150, y: 180 },
         { x: 500, y: 200 },
         { x: 1000, y: 180 },
         { x: 1400, y: 250 },
+
         { x: 200, y: 800 },
         { x: 1200, y: 700 },
         { x: 1450, y: 1000 },
+
         { x: 500, y: 1250 },
         { x: 1100, y: 1300 }
     ];
+
 
     for (const tree of trees) {
 
@@ -271,7 +508,9 @@ function drawTrees() {
         const y =
             tree.y - camera.y;
 
+
         // Trunk
+
         ctx.fillStyle = "#7b4f2c";
 
         ctx.fillRect(
@@ -281,7 +520,9 @@ function drawTrees() {
             40
         );
 
+
         // Leaves
+
         ctx.fillStyle = "#2f8f46";
 
         ctx.beginPath();
@@ -299,9 +540,42 @@ function drawTrees() {
 }
 
 
-// -------------------------
+// =========================
+// DRAW CLUES
+// =========================
+
+function drawClues() {
+
+    for (const clue of clues) {
+
+        if (clue.found) {
+            continue;
+        }
+
+        const x =
+            clue.x - camera.x;
+
+        const y =
+            clue.y - camera.y;
+
+        ctx.font = "28px Arial";
+
+        ctx.textAlign = "center";
+
+        ctx.textBaseline = "middle";
+
+        ctx.fillText(
+            "📜",
+            x,
+            y
+        );
+    }
+}
+
+
+// =========================
 // DRAW TREASURES
-// -------------------------
+// =========================
 
 function drawTreasures() {
 
@@ -332,9 +606,66 @@ function drawTreasures() {
 }
 
 
-// -------------------------
+// =========================
+// DRAW CAVE
+// =========================
+
+function drawCave() {
+
+    const x =
+        cave.x - camera.x;
+
+    const y =
+        cave.y - camera.y;
+
+
+    ctx.fillStyle = "#3b2f4a";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        x,
+        y,
+        70,
+        55,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    ctx.fillStyle = "#111";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        x,
+        y + 10,
+        45,
+        40,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    ctx.font = "25px Arial";
+
+    ctx.fillText(
+        "🕯️",
+        x,
+        y - 70
+    );
+}
+
+
+// =========================
 // DRAW PLAYER
-// -------------------------
+// =========================
 
 function drawPlayer() {
 
@@ -344,7 +675,9 @@ function drawPlayer() {
     const y =
         player.y - camera.y;
 
+
     // Body
+
     ctx.fillStyle = "#ffcc66";
 
     ctx.beginPath();
@@ -359,7 +692,9 @@ function drawPlayer() {
 
     ctx.fill();
 
+
     // Hat
+
     ctx.fillStyle = "#8b5a2b";
 
     ctx.beginPath();
@@ -374,7 +709,9 @@ function drawPlayer() {
 
     ctx.fill();
 
-    // Face
+
+    // Eyes
+
     ctx.fillStyle = "#222";
 
     ctx.beginPath();
@@ -388,6 +725,7 @@ function drawPlayer() {
     );
 
     ctx.fill();
+
 
     ctx.beginPath();
 
@@ -403,44 +741,45 @@ function drawPlayer() {
 }
 
 
-// -------------------------
-// DRAW
-// -------------------------
-
-function draw() {
-
-    ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-    drawIsland();
-
-    drawTrees();
-
-    drawTreasures();
-
-    drawPlayer();
-}
-
-
-// -------------------------
+// =========================
 // GAME LOOP
-// -------------------------
+// =========================
 
 function gameLoop() {
 
     updatePlayer();
 
+    checkClues();
+
     checkTreasures();
+
+    checkCave();
 
     updateCamera();
 
-    draw();
+    drawIsland();
 
-    requestAnimationFrame(gameLoop);
+    drawTrees();
+
+    drawClues();
+
+    drawTreasures();
+
+    drawCave();
+
+    drawPlayer();
+
+
+    if (messageTimer > 0) {
+
+        messageTimer--;
+    }
+
+
+    requestAnimationFrame(
+        gameLoop
+    );
 }
+
 
 gameLoop();
